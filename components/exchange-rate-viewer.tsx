@@ -178,11 +178,17 @@ export default function ExchangeRateHotelViewer() {
     setError(null)
 
     try {
+      console.log('Fetching data for currency:', baseCurrency)
       const response = await axios.get('/api/getSheetData', {
         params: { baseCurrency },
       })
       const rawData = response.data.data
-      console.log('Raw data:', rawData)
+      console.log('Received data:', rawData)
+      
+      if (!rawData) {
+        throw new Error('データが空です')
+      }
+
       const processedData: ExchangeRate[] = []
       let currentType: 'store' | 'bank' | 'creditCard' = 'store'
 
@@ -228,7 +234,11 @@ export default function ExchangeRateHotelViewer() {
       }
     } catch (err) {
       console.error('Failed to fetch data:', err)
-      setError('データの取得に失敗しました。')
+      if (axios.isAxiosError(err)) {
+        setError(`データの取得に失敗しました: ${err.response?.data?.error || err.message}`)
+      } else {
+        setError('データの取得に失敗しました。')
+      }
     } finally {
       setLoading(false)
     }
@@ -423,8 +433,7 @@ export default function ExchangeRateHotelViewer() {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         .tab:hover:not(.active) {
-          color: #374151;
-        }
+          color: #374151
 
         .currency-tabs-container {
           background: #f3f4f6;
