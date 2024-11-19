@@ -861,6 +861,12 @@ export default function ExchangeRateHotelViewer() {
                       </div>
                     </div>
                   )}
+
+                  {activeTab !== 'exchange' && activeTab !== 'hotel' && (
+                    <div className="p-4 text-center">
+                      このタブの内容は現在準備中です。
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -875,13 +881,17 @@ export default function ExchangeRateHotelViewer() {
                   <h3 className="font-bold mb-2">{selectedStore.store}</h3>
                   <p className="text-sm text-gray-600 mb-2">{selectedStore.address}</p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>買いレート: {selectedStore.buyRate?.toFixed(4)}</div>
-                    <div>売りレート: {selectedStore.sellRate?.toFixed(4)}</div>
+                    <div>買いレート: {selectedStore.buyRate?.toFixed(4) ?? 'N/A'}</div>
+                    <div>売りレート: {selectedStore.sellRate?.toFixed(4) ?? 'N/A'}</div>
                     <div className="col-span-2">更新時間: {selectedStore.updateTime}</div>
                   </div>
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="w-full">
+            <AdSpace className="h-20" />
           </div>
         </div>
       </main>
