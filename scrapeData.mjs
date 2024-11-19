@@ -2,17 +2,22 @@
 import puppeteer from 'puppeteer';
 import { google } from 'googleapis';
 import open from 'open';
-import fs from 'fs';
 
 // 定数の設定
 const SPREADSHEET_ID = '1ZPkPq-UdjeRljbtxWIQPisCfBoEsCkxjmTyJ2zufB74';
-const JSON_PATH = './credentials/cantonese-katakana-0f740ce346b9.json';
 
+// 認証関数
 // 認証関数
 async function authenticate() {
   try {
+    const credentials = {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      project_id: process.env.GOOGLE_PROJECT_ID
+    };
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: JSON_PATH,
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 

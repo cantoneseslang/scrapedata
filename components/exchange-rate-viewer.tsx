@@ -31,7 +31,7 @@ const SortIcon = () => (
 export type ExchangeRate = {
   store: string
   buyRate: number | null
-  sellRate: null
+  sellRate: number | null
   url: string
   updateTime: string
   type: 'store' | 'bank' | 'creditCard' | 'title'
@@ -161,8 +161,8 @@ const Map = ({ exchangeRates, selectedStore }: { exchangeRates: ExchangeRate[], 
           <h3 class="font-bold text-lg mb-1">${selectedStore.store}</h3>
           <p class="text-sm text-gray-600">${selectedStore.address}</p>
           <div class="mt-2 text-sm">
-            <p>買いレート: ${selectedStore.buyRate?.toFixed(4)}</p>
-            <p>売りレート: ${selectedStore.sellRate?.toFixed(4)}</p>
+            <p>買いレート: ${selectedStore.buyRate?.toFixed(4) ?? 'N/A'}</p>
+            <p>売りレート: ${selectedStore.sellRate?.toFixed(4) ?? 'N/A'}</p>
             <p>更新時間: ${selectedStore.updateTime}</p>
           </div>
         </div>
@@ -219,7 +219,7 @@ export default function ExchangeRateHotelViewer() {
       header: '買いレート',
       cell: ({ row }) => {
         const value = row.getValue('buyRate')
-        return <div className="text-right">{typeof value === 'number' ? value.toFixed(4) : ''}</div>
+        return <div className="text-right">{typeof value === 'number' ? value.toFixed(4) : 'N/A'}</div>
       },
     },
     {
@@ -227,7 +227,7 @@ export default function ExchangeRateHotelViewer() {
       header: '売りレート',
       cell: ({ row }) => {
         const value = row.getValue('sellRate')
-        return <div className="text-right">{typeof value === 'number' ? value.toFixed(4) : ''}</div>
+        return <div className="text-right">{typeof value === 'number' ? value.toFixed(4) : 'N/A'}</div>
       },
     },
     {
@@ -423,7 +423,6 @@ export default function ExchangeRateHotelViewer() {
       console.error('Failed to fetch hotel data:', err)
       setError('ホテルデータの取得に失敗しました。')
     } finally {
-      
       setLoading(false)
     }
   }
@@ -758,8 +757,8 @@ export default function ExchangeRateHotelViewer() {
                                       .map(item => (
                                         <TableRow key={item.store}>
                                           <TableCell>{item.store}</TableCell>
-                                          <TableCell className="text-right">{item.buyRate?.toFixed(4)}</TableCell>
-                                          <TableCell className="text-right">{item.sellRate?.toFixed(4)}</TableCell>
+                                          <TableCell className="text-right">{item.buyRate?.toFixed(4) ?? 'N/A'}</TableCell>
+                                          <TableCell className="text-right">{item.sellRate?.toFixed(4) ?? 'N/A'}</TableCell>
                                           <TableCell>{item.updateTime}</TableCell>
                                           <TableCell>{item.area}</TableCell>
                                           <TableCell>
@@ -782,8 +781,8 @@ export default function ExchangeRateHotelViewer() {
                                       .map(item => (
                                         <TableRow key={item.store}>
                                           <TableCell>{item.store}</TableCell>
-                                          <TableCell className="text-right">{item.buyRate?.toFixed(4)}</TableCell>
-                                          <TableCell className="text-right">{item.sellRate?.toFixed(4)}</TableCell>
+                                          <TableCell className="text-right">{item.buyRate?.toFixed(4) ?? 'N/A'}</TableCell>
+                                          <TableCell className="text-right">{item.sellRate?.toFixed(4) ?? 'N/A'}</TableCell>
                                           <TableCell>{item.updateTime}</TableCell>
                                           <TableCell>{item.area}</TableCell>
                                           <TableCell>
