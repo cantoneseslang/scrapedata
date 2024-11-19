@@ -44,13 +44,7 @@
     "tailwindcss": "^3.4.14",
     "typescript": "5.6.3"
   },
-  "name": "scrape-data-project",
-  "version": "1.0.0",
   "engines": {
-<<<<<<< HEAD
     "node": "20.x"
-=======
-  "node": "20.x"
->>>>>>> 77be9e8ced3889f87edc9b80747eea94b15b5b1b
   }
 }
