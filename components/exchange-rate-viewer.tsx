@@ -256,7 +256,6 @@ export default function ExchangeRateHotelViewer() {
               }
             }}
             variant="outline"
-            size="sm"
             className="w-full"
           >
             地図を見る
@@ -321,7 +320,6 @@ export default function ExchangeRateHotelViewer() {
               }
             }}
             variant="outline"
-            size="sm"
             className="w-full"
           >
             地図を見る
@@ -364,7 +362,7 @@ export default function ExchangeRateHotelViewer() {
         } else {
           const latitude = item.latitude ? parseFloat(item.latitude) : null
           const longitude = item.longitude ? parseFloat(item.longitude) : null
-          
+
           processedData.push({
             ...item,
             type: currentType,
@@ -378,9 +376,9 @@ export default function ExchangeRateHotelViewer() {
 
       console.log('Processed data:', processedData)
       setData(processedData)
-      
+
       // Set the first store with valid coordinates as the default selection
-      const firstValidStore = processedData.find(store => 
+      const firstValidStore = processedData.find(store =>
         store.latitude && store.longitude && store.type === 'store'
       )
       if (firstValidStore) {
@@ -446,11 +444,11 @@ export default function ExchangeRateHotelViewer() {
         sortedStoreData.sort((a, b) => {
           const aValue = a[id as keyof ExchangeRate]
           const bValue = b[id as keyof ExchangeRate]
-          
+
           if (aValue === null && bValue === null) return 0
           if (aValue === null) return 1
           if (bValue === null) return -1
-          
+
           if (aValue < bValue) return desc ? 1 : -1
           if (aValue > bValue) return desc ? -1 : 1
           return a.originalIndex - b.originalIndex
@@ -465,7 +463,7 @@ export default function ExchangeRateHotelViewer() {
         sortedHotelData.sort((a, b) => {
           const aValue = a[id as keyof Hotel]
           const bValue = b[id as keyof Hotel]
-          
+
           if (aValue < bValue) return desc ? 1 : -1
           if (aValue > bValue) return desc ? -1 : 1
           return 0
@@ -675,7 +673,6 @@ export default function ExchangeRateHotelViewer() {
                           <div className="flex space-x-2">
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => handleSort('buyRate')}
                               className="flex items-center"
                             >
@@ -684,7 +681,6 @@ export default function ExchangeRateHotelViewer() {
                             </Button>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => handleSort('sellRate')}
                               className="flex items-center"
                             >
@@ -693,7 +689,6 @@ export default function ExchangeRateHotelViewer() {
                             </Button>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => handleSort('area')}
                               className="flex items-center"
                             >
@@ -765,7 +760,6 @@ export default function ExchangeRateHotelViewer() {
                                             <Button
                                               onClick={() => setSelectedStore(item)}
                                               variant="outline"
-                                              size="sm"
                                             >
                                               地図を見る
                                             </Button>
@@ -789,7 +783,6 @@ export default function ExchangeRateHotelViewer() {
                                             <Button
                                               onClick={() => setSelectedStore(item)}
                                               variant="outline"
-                                              size="sm"
                                             >
                                               地図を見る
                                             </Button>
@@ -872,9 +865,9 @@ export default function ExchangeRateHotelViewer() {
             </div>
 
             <div className="w-1/3 min-h-[600px] sticky top-[144px]">
-              <Map 
-                exchangeRates={data} 
-                selectedStore={selectedStore} 
+              <Map
+                exchangeRates={data}
+                selectedStore={selectedStore}
               />
               {selectedStore && (
                 <div className="mt-4 p-4 bg-white rounded-lg shadow">
