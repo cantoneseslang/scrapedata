@@ -1,0 +1,22 @@
+name: Scrape Data Hourly
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 毎時実行
+  workflow_dispatch:  # 手動実行用
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Install dependencies
+      run: npm ci
+    - name: Run scraper
+      run: node scrapeData.mjs
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
