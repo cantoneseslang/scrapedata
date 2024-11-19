@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
-import path from 'path';
 
 const SHEET_NAMES = {
   'JPY': '1JPY-HKD',
@@ -13,27 +12,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { baseCurrency } = req.query;
 
   try {
-    // 認証ファイルのパスを修正
-    const keyFilePath = path.join(process.cwd(), 'credentials', 'cantonese-katakana-0f740ce346b9.json');
-
-    // ファイルの存在確認を追加
-    const fs = require('fs');
-    if (!fs.existsSync(keyFilePath)) {
-      console.error(`Authentication file not found at: ${keyFilePath}`);
-      return res.status(500).json({ error: 'Authentication configuration error' });
+    if (!process.env.GOOGLE_CREDENTIALS) {
+      throw new Error('GOOGLE_CREDENTIALS environment variable is not set');
     }
 
+    const credentials = JSON.parse(
+      Buffer.from(process.env.GOOGLE_CREDENTIALS, 'base64').toString()
+    );
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: keyFilePath,
+      credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // シート名の検証を追加
     const sheetName = SHEET_NAMES[baseCurrency as keyof typeof SHEET_NAMES];
     if (!sheetName) {
       return res.status(400).json({ error: 'Invalid currency specified' });
+    }
+
+    if (!process.env.SPREADSHEET_ID) {
+      throw new Error('SPREADSHEET_ID environment variable is not set');
     }
 
     const range = `'${sheetName}'!A5:H74`;
@@ -65,16 +65,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ data });
   } catch (error) {
     console.error('Error fetching data:', error);
-    if (error instanceof Error) {
-      res.status(500).json({ 
-        error: 'Failed to fetch data from Google Sheets',
-        details: error.message 
-      });
-    } else {
-      res.status(500).json({ 
-        error: 'Failed to fetch data from Google Sheets',
-        details: 'Unknown error occurred'
-      });
-    }
+    res.status(500).json({ 
+      error: 'Failed to fetch data from Google Sheets',
+      details: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
   }
 }
