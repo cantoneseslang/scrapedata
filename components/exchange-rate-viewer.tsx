@@ -21,9 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-// import { SortIcon } from '@/components/icons/sort-icon'
-import { Map } from './map'
-import AdSpace from './ad-space'
+import { Map } from '@/components/ui/map'
+import AdSpace from '@/components/ui/ad-space'
 
 export type ExchangeRate = {
   store: string;
@@ -36,8 +35,8 @@ export type ExchangeRate = {
   area: string;
   mapUrl: string;
   address: string;
-  latitude?: number | undefined;
-  longitude?: number | undefined;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type Hotel = {
@@ -48,25 +47,24 @@ export type Hotel = {
   phoneNumber: string;
   area: string;
   mapUrl: string;
-  latitude?: number | undefined;
-  longitude?: number | undefined;
+  latitude?: number;
+  longitude?: number;
 };
 
 export default function ExchangeRateHotelViewer() {
-  const [activeTab, setActiveTab] = useState('exchange')
+  const [activeTab, setActiveTab] = useState<'exchange' | 'hotel'>('exchange')
   const [activeCurrency, setActiveCurrency] = useState('JPY')
-  const [data, setData] = useState<ExchangeRate[]>([])
+  const [exchangeData, setExchangeData] = useState<ExchangeRate[]>([])
   const [hotelData, setHotelData] = useState<Hotel[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [sorting, setSorting] = useState<SortingState>([])
   const [selectedStore, setSelectedStore] = useState<ExchangeRate | null>(null)
 
-  const columns: ColumnDef<ExchangeRate>[] = [
+  const exchangeColumns: ColumnDef<ExchangeRate>[] = [
     {
       accessorKey: 'store',
       header: '両替所',
-      cell: ({ row }) => <div>{row.getValue('store')}</div>,
     },
     {
       accessorKey: 'buyRate',
@@ -87,16 +85,13 @@ export default function ExchangeRateHotelViewer() {
     {
       accessorKey: 'updateTime',
       header: '更新時間',
-      cell: ({ row }) => <div>{row.getValue('updateTime')}</div>,
     },
     {
       accessorKey: 'area',
       header: '地域',
-      cell: ({ row }) => <div>{row.getValue('area')}</div>,
     },
     {
-      accessorKey: 'mapUrl',
-      header: '地図URL',
+      id: 'actions',
       cell: ({ row }) => {
         const store = row.original
         return (
@@ -123,36 +118,29 @@ export default function ExchangeRateHotelViewer() {
     {
       accessorKey: 'englishName',
       header: '英語ホテル名',
-      cell: ({ row }) => <div>{row.getValue('englishName')}</div>,
     },
     {
       accessorKey: 'chineseName',
       header: '漢字ホテル名',
-      cell: ({ row }) => <div>{row.getValue('chineseName')}</div>,
     },
     {
       accessorKey: 'englishAddress',
       header: '英語住所',
-      cell: ({ row }) => <div>{row.getValue('englishAddress')}</div>,
     },
     {
       accessorKey: 'chineseAddress',
       header: '漢字住所',
-      cell: ({ row }) => <div>{row.getValue('chineseAddress')}</div>,
     },
     {
       accessorKey: 'phoneNumber',
       header: '電話番号',
-      cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
     },
     {
       accessorKey: 'area',
       header: '地域',
-      cell: ({ row }) => <div>{row.getValue('area')}</div>,
     },
     {
-      accessorKey: 'mapUrl',
-      header: '地図URL',
+      id: 'actions',
       cell: ({ row }) => {
         const hotel = row.original
         return (
@@ -160,7 +148,6 @@ export default function ExchangeRateHotelViewer() {
             onClick={() => {
               if (hotel.latitude && hotel.longitude) {
                 setSelectedStore({
-                  ...hotel,
                   store: hotel.englishName,
                   buyRate: null,
                   sellRate: null,
@@ -170,6 +157,9 @@ export default function ExchangeRateHotelViewer() {
                   originalIndex: 0,
                   mapUrl: hotel.mapUrl,
                   address: hotel.englishAddress,
+                  area: hotel.area,
+                  latitude: hotel.latitude,
+                  longitude: hotel.longitude,
                 })
               }
             }}
@@ -183,7 +173,7 @@ export default function ExchangeRateHotelViewer() {
     },
   ]
 
-  const fetchData = async (baseCurrency: string) => {
+  const fetchExchangeData = async (baseCurrency: string) => {
     setLoading(true)
     setError(null)
 
@@ -209,8 +199,6 @@ export default function ExchangeRateHotelViewer() {
             area: '',
             mapUrl: '',
             address: '',
-            latitude: undefined,
-            longitude: undefined,
           })
           currentType = item.store === '銀行' ? 'bank' : 'creditCard'
         } else {
@@ -229,9 +217,8 @@ export default function ExchangeRateHotelViewer() {
       })
 
       console.log('Processed data:', processedData)
-      setData(processedData)
+      setExchangeData(processedData)
 
-      // Set the first store with valid coordinates as the default selection
       const firstValidStore = processedData.find(store =>
         store.latitude !== undefined && store.longitude !== undefined && store.type === 'store'
       )
@@ -281,7 +268,7 @@ export default function ExchangeRateHotelViewer() {
 
   useEffect(() => {
     if (activeTab === 'exchange') {
-      fetchData(activeCurrency)
+      fetchExchangeData(activeCurrency)
     } else if (activeTab === 'hotel') {
       fetchHotelData()
     }
@@ -289,8 +276,8 @@ export default function ExchangeRateHotelViewer() {
 
   const sortedData = useMemo(() => {
     if (activeTab === 'exchange') {
-      const bankIndex = data.findIndex(item => item.store === '銀行')
-      const storeData = data.slice(0, bankIndex)
+      const bankIndex = exchangeData.findIndex(item => item.store === '銀行')
+      const storeData = exchangeData.slice(0, bankIndex)
 
       let sortedStoreData = [...storeData]
       if (sorting.length > 0) {
@@ -303,14 +290,19 @@ export default function ExchangeRateHotelViewer() {
           if (aValue === null) return 1
           if (bValue === null) return -1
 
-          if (aValue < bValue) return desc ? 1 : -1
-          if (aValue > bValue) return desc ? -1 : 1
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return desc ? bValue - aValue : aValue - bValue
+          }
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return desc ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue)
+          }
+
           return a.originalIndex - b.originalIndex
         })
       }
 
       return sortedStoreData
-    } else if (activeTab === 'hotel') {
+    } else {
       let sortedHotelData = [...hotelData]
       if (sorting.length > 0) {
         const { id, desc } = sorting[0]
@@ -318,21 +310,40 @@ export default function ExchangeRateHotelViewer() {
           const aValue = a[id as keyof Hotel]
           const bValue = b[id as keyof Hotel]
 
-          if (aValue < bValue) return desc ? 1 : -1
-          if (aValue > bValue) return desc ? -1 : 1
+          if (aValue === undefined && bValue === undefined) return 0
+          if (aValue === undefined) return 1
+          if (bValue === undefined) return -1
+
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return desc ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue)
+          }
+
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return desc ? bValue - aValue : aValue - bValue
+          }
+
           return 0
         })
       }
 
       return sortedHotelData
     }
+  }, [activeTab, exchangeData, hotelData, sorting])
 
-    return []
-  }, [activeTab, data, hotelData, sorting])
+  const exchangeTable = useReactTable({
+    data: sortedData.filter((item): item is ExchangeRate => 'buyRate' in item),
+    columns: exchangeColumns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
 
-  const table = useReactTable({
-    data: sortedData,
-    columns: activeTab === 'exchange' ? columns : hotelColumns,
+  const hotelTable = useReactTable({
+    data: sortedData.filter((item): item is Hotel => 'englishName' in item),
+    columns: hotelColumns,
     state: {
       sorting,
     },
@@ -497,7 +508,7 @@ export default function ExchangeRateHotelViewer() {
                       <button
                         key={tab.id}
                         className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => setActiveTab(tab.id as 'exchange' | 'hotel')}
                       >
                         {tab.label}
                       </button>
@@ -514,7 +525,7 @@ export default function ExchangeRateHotelViewer() {
                                 key={pair.id}
                                 onClick={() => {
                                   setActiveCurrency(pair.base)
-                                  fetchData(pair.base)
+                                  fetchExchangeData(pair.base)
                                 }}
                                 className={`currency-tab ${
                                   activeCurrency === pair.base ? 'active' : ''
@@ -609,7 +620,7 @@ export default function ExchangeRateHotelViewer() {
                           ) : (
                             <Table>
                               <TableHeader>
-                                {table.getHeaderGroups().map((headerGroup) => (
+                                {exchangeTable.getHeaderGroups().map((headerGroup) => (
                                   <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
                                       <TableHead key={header.id} className="font-bold">
@@ -625,13 +636,13 @@ export default function ExchangeRateHotelViewer() {
                                 ))}
                               </TableHeader>
                               <TableBody>
-                                {table.getRowModel().rows.length ? (
+                                {exchangeTable.getRowModel().rows.length ? (
                                   <>
-                                    {table.getRowModel().rows.map((row, index) => (
+                                    {exchangeTable.getRowModel().rows.map((row, index) => (
                                       <React.Fragment key={row.id}>
                                         {index === 4 && (
                                           <TableRow>
-                                            <TableCell colSpan={columns.length}>
+                                            <TableCell colSpan={exchangeColumns.length}>
                                               <AdSpace />
                                             </TableCell>
                                           </TableRow>
@@ -647,9 +658,9 @@ export default function ExchangeRateHotelViewer() {
                                     ))}
 
                                     <TableRow className="bg-gray-100">
-                                      <TableCell colSpan={columns.length} className="font-bold">銀行</TableCell>
+                                      <TableCell colSpan={exchangeColumns.length} className="font-bold">銀行</TableCell>
                                     </TableRow>
-                                    {data
+                                    {exchangeData
                                       .filter(item => item.type === 'bank')
                                       .map(item => (
                                         <TableRow key={item.store}>
@@ -670,9 +681,9 @@ export default function ExchangeRateHotelViewer() {
                                       ))}
 
                                     <TableRow className="bg-gray-100">
-                                      <TableCell colSpan={columns.length} className="font-bold">クレジットカード</TableCell>
+                                      <TableCell colSpan={exchangeColumns.length} className="font-bold">クレジットカード</TableCell>
                                     </TableRow>
-                                    {data
+                                    {exchangeData
                                       .filter(item => item.type === 'creditCard')
                                       .map(item => (
                                         <TableRow key={item.store}>
@@ -694,7 +705,7 @@ export default function ExchangeRateHotelViewer() {
                                   </>
                                 ) : (
                                   <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    <TableCell colSpan={exchangeColumns.length} className="h-24 text-center">
                                       データがありません。再度お試しください。
                                     </TableCell>
                                   </TableRow>
@@ -717,7 +728,7 @@ export default function ExchangeRateHotelViewer() {
                         ) : (
                           <Table>
                             <TableHeader>
-                              {table.getHeaderGroups().map((headerGroup) => (
+                              {hotelTable.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                   {headerGroup.headers.map((header) => (
                                     <TableHead key={header.id} className="font-bold">
@@ -733,8 +744,8 @@ export default function ExchangeRateHotelViewer() {
                               ))}
                             </TableHeader>
                             <TableBody>
-                              {table.getRowModel().rows.length ? (
-                                table.getRowModel().rows.map((row) => (
+                              {hotelTable.getRowModel().rows.length ? (
+                                hotelTable.getRowModel().rows.map((row) => (
                                   <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
                                       <TableCell key={cell.id}>
@@ -768,7 +779,7 @@ export default function ExchangeRateHotelViewer() {
 
             <div className="w-1/3 min-h-[600px] sticky top-[144px]">
               <Map
-                exchangeRates={data}
+                exchangeRates={exchangeData}
                 selectedStore={selectedStore}
               />
               {selectedStore && (
