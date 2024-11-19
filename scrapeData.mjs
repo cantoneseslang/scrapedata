@@ -7,10 +7,14 @@ import open from 'open';
 const SPREADSHEET_ID = '1ZPkPq-UdjeRljbtxWIQPisCfBoEsCkxjmTyJ2zufB74';
 
 // 認証関数
+// 認証関数
 async function authenticate() {
   try {
-    // 環境変数から認証情報を取得
-    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || '{}');
+    const credentials = {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      project_id: process.env.GOOGLE_PROJECT_ID
+    };
 
     const auth = new google.auth.GoogleAuth({
       credentials: credentials,
