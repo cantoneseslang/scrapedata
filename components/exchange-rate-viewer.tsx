@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import Image from 'next/image'
-import { MapPin } from 'lucide-react'
 import {
   ColumnDef,
-  SortingState,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  SortingState,
 } from '@tanstack/react-table'
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -20,13 +20,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Card, CardContent } from "@/components/ui/card"
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api'
-
-const SortIcon = () => (
-  <span className="ml-2">↕︎</span>
-)
+} from '@/components/ui/table'
+import { SortIcon } from '@/components/icons/sort-icon'
+import Map from '@/components/map'
+import AdSpace from '@/components/ad-space'
 
 export type ExchangeRate = {
   store: string;
@@ -54,151 +51,6 @@ export type Hotel = {
   latitude?: number | undefined;
   longitude?: number | undefined;
 };
-
-export type SortingState = Array<{ id: string; desc: boolean }>;
-
-const AdSpace = ({ className, isTop = false }: { className?: string; isTop?: boolean }) => (
-  <div className={`bg-white p-0 text-center overflow-hidden ${className}`} style={{ height: '100%', width: '100%' }}>
-    {isTop ? (
-      <div className="h-full flex items-center justify-center">
-        <a 
-          href="https://script.google.com/macros/s/AKfycbwLUhEYo6RviXKnsIdOhNKi7eBalouJMuP8avHWG1WEmye2zka5bJQ9Azt2IV7m6SS1/exec"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          <div className="glow-lamp-effect text-[60px] font-bold tracking-tighter leading-none whitespace-nowrap">
-            スラング式広東語万能辞書
-            <span className="text-[30px]">＜ここをクリック＞</span>
-          </div>
-        </a>
-      </div>
-    ) : (
-      <div className="h-full flex items-center justify-center">
-        <Image
-          src="/1200x80 banner1.png"
-          alt="Advertisement"
-          width={1200}
-          height={80}
-          layout="responsive"
-        />
-      </div>
-    )}
-  </div>
-)
-
-const Map = ({ exchangeRates, selectedStore }: { exchangeRates: ExchangeRate[], selectedStore: ExchangeRate | null }) => {
-  const [map, setMap] = useState<google.maps.Map | null>(null)
-  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null)
-  const [marker, setMarker] = useState<google.maps.Marker | null>(null)
-  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null)
-
-  const mapContainerStyle = {
-    width: '100%',
-    height: '600px'
-  }
-
-  const center = {
-    lat: 22.2988,
-    lng: 114.1722
-  }
-
-  useEffect(() => {
-    if (map && selectedStore) {
-      const position = selectedStore.latitude && selectedStore.longitude
-        ? { lat: selectedStore.latitude, lng: selectedStore.longitude }
-        : null;
-
-      if (position) {
-        map.panTo(position);
-        if (marker) {
-          marker.setPosition(position);
-        } else {
-          const newMarker = new google.maps.Marker({
-            position,
-            map,
-            animation: google.maps.Animation.DROP
-          });
-          setMarker(newMarker);
-        }
-      } else if (selectedStore.address && geocoder) {
-        geocoder.geocode({ address: selectedStore.address }, (results, status) => {
-          if (status === 'OK' && results && results[0]) {
-            const pos = results[0].geometry.location;
-            map.panTo(pos);
-            if (marker) {
-              marker.setPosition(pos);
-            } else {
-              const newMarker = new google.maps.Marker({
-                position: pos,
-                map,
-                animation: google.maps.Animation.DROP
-              });
-              setMarker(newMarker);
-            }
-          }
-        });
-      }
-    }
-  }, [map, geocoder, selectedStore])
-
-  const updateMarkerAndInfoWindow = (position: google.maps.LatLng | google.maps.LatLngLiteral) => {
-    if (marker) {
-      marker.setPosition(position)
-    } else {
-      const newMarker = new google.maps.Marker({ position, map })
-      setMarker(newMarker)
-    }
-
-    if (infoWindow) {
-      infoWindow.setPosition(position)
-    } else {
-      const newInfoWindow = new google.maps.InfoWindow({ position })
-      setInfoWindow(newInfoWindow)
-    }
-
-    if (selectedStore) {
-      const content = `
-        <div class="p-2">
-          <h3 class="font-bold text-lg mb-1">${selectedStore.store}</h3>
-          <p class="text-sm text-gray-600">${selectedStore.address}</p>
-          <div class="mt-2 text-sm">
-            <p>買いレート: ${selectedStore.buyRate?.toFixed(4) ?? 'N/A'}</p>
-            <p>売りレート: ${selectedStore.sellRate?.toFixed(4) ?? 'N/A'}</p>
-            <p>更新時間: ${selectedStore.updateTime}</p>
-          </div>
-        </div>
-      `
-      if (infoWindow) {
-        infoWindow.setContent(content)
-        infoWindow.open(map)
-      }
-    }
-  }
-
-  const onLoad = React.useCallback((map: google.maps.Map) => {
-    setMap(map)
-    setGeocoder(new google.maps.Geocoder())
-  }, [])
-
-  return (
-    <div className="relative w-full h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
-      <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={center}
-          zoom={15}
-          onLoad={onLoad}
-          options={{
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true,
-          }}
-        />
-      </LoadScript>
-    </div>
-  )
-}
 
 export default function ExchangeRateHotelViewer() {
   const [activeTab, setActiveTab] = useState('exchange')
@@ -527,7 +379,7 @@ export default function ExchangeRateHotelViewer() {
   return (
     <div className="min-h-screen bg-gray-100">
       <style jsx global>{`
-        @import  url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
         .tabs-container {
           background: #f3f4f6;
