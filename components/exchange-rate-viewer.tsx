@@ -21,8 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Map } from '@/components/ui/map'
-import AdSpace from '@/components/ui/ad-space'
+import { Map } from '@/components/ui/MapComponent'
+import AdSpace from '@/components/ui/AdSpace'
 
 export type ExchangeRate = {
   store: string;
