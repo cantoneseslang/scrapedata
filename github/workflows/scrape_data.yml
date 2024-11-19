@@ -23,7 +23,8 @@ jobs:
         run: mkdir -p credentials
         
       - name: Set up credentials
-        run: echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' > credentials/cantonese-katakana-0f740ce346b9.json
-        
+        run: |
+          echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}' > credentials/cantonese-katakana-0f740ce346b9.json
+          
       - name: Run scraper
         run: node scrapeData.mjs
