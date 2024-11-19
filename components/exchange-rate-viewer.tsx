@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { SortIcon } from '@/components/icons/sort-icon'
+// import { SortIcon } from '@/components/icons/sort-icon'
 import Map from '@/components/map'
 import AdSpace from '@/components/ad-space'
 
