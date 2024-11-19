@@ -17,7 +17,7 @@ async function authenticate() {
     };
 
     const auth = new google.auth.GoogleAuth({
-      credentials: credentials,
+      keyFile: JSON_PATH,
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
