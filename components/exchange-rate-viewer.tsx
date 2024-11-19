@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 // import { SortIcon } from '@/components/icons/sort-icon'
-import Map from './map'
+import { Map } from '@/components/ui/map'
 import AdSpace from './ad-space'
 
 export type ExchangeRate = {
