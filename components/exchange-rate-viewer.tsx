@@ -433,7 +433,8 @@ export default function ExchangeRateHotelViewer() {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         .tab:hover:not(.active) {
-          color: #374151
+          color: #374151;
+        }
 
         .currency-tabs-container {
           background: #f3f4f6;
