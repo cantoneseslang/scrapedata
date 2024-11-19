@@ -2,8 +2,8 @@ name: Scrape Data Hourly
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 毎時実行
-  workflow_dispatch:  # 手動実行用
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -17,6 +17,12 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Run scraper
-      run: node scrapeData.mjs
       env:
+        SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+        GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
+        GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+      run: node scrapeData.mjs
