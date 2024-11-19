@@ -29,31 +29,33 @@ const SortIcon = () => (
 )
 
 export type ExchangeRate = {
-  store: string
-  buyRate: number | null
-  sellRate: number | null
-  url: string
-  updateTime: string
-  type: 'store' | 'bank' | 'creditCard' | 'title'
-  originalIndex: number
-  area: string
-  latitude?: number
-  longitude?: number
-  mapUrl: string
-  address: string
-}
+  store: string;
+  buyRate: number | null;
+  sellRate: number | null;
+  url: string;
+  updateTime: string;
+  type: 'store' | 'bank' | 'creditCard' | 'title';
+  originalIndex: number;
+  area: string;
+  mapUrl: string;
+  address: string;
+  latitude?: number | undefined;
+  longitude?: number | undefined;
+};
 
 export type Hotel = {
-  englishName: string
-  chineseName: string
-  englishAddress: string
-  chineseAddress: string
-  phoneNumber: string
-  area: string
-  mapUrl: string
-  latitude?: number
-  longitude?: number
-}
+  englishName: string;
+  chineseName: string;
+  englishAddress: string;
+  chineseAddress: string;
+  phoneNumber: string;
+  area: string;
+  mapUrl: string;
+  latitude?: number | undefined;
+  longitude?: number | undefined;
+};
+
+export type SortingState = Array<{ id: string; desc: boolean }>;
 
 const AdSpace = ({ className, isTop = false }: { className?: string; isTop?: boolean }) => (
   <div className={`bg-white p-0 text-center overflow-hidden ${className}`} style={{ height: '100%', width: '100%' }}>
@@ -355,13 +357,13 @@ export default function ExchangeRateHotelViewer() {
             area: '',
             mapUrl: '',
             address: '',
-            latitude: null,
-            longitude: null,
+            latitude: undefined,
+            longitude: undefined,
           })
           currentType = item.store === '銀行' ? 'bank' : 'creditCard'
         } else {
-          const latitude = item.latitude ? parseFloat(item.latitude) : null
-          const longitude = item.longitude ? parseFloat(item.longitude) : null
+          const latitude = item.latitude ? parseFloat(item.latitude) : undefined
+          const longitude = item.longitude ? parseFloat(item.longitude) : undefined
 
           processedData.push({
             ...item,
@@ -379,7 +381,7 @@ export default function ExchangeRateHotelViewer() {
 
       // Set the first store with valid coordinates as the default selection
       const firstValidStore = processedData.find(store =>
-        store.latitude && store.longitude && store.type === 'store'
+        store.latitude !== undefined && store.longitude !== undefined && store.type === 'store'
       )
       if (firstValidStore) {
         console.log('Setting default store:', firstValidStore)
@@ -411,8 +413,8 @@ export default function ExchangeRateHotelViewer() {
         phoneNumber: item.phoneNumber,
         area: item.area,
         mapUrl: item.mapUrl,
-        latitude: item.latitude ? parseFloat(item.latitude) : null,
-        longitude: item.longitude ? parseFloat(item.longitude) : null,
+        latitude: item.latitude ? parseFloat(item.latitude) : undefined,
+        longitude: item.longitude ? parseFloat(item.longitude) : undefined,
       }))
 
       console.log('Processed hotel data:', processedData)
