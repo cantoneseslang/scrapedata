@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import axios from 'axios'
 import Image from 'next/image'
 import {
@@ -60,6 +60,7 @@ export default function ExchangeRateHotelViewer() {
   const [error, setError] = useState<string | null>(null)
   const [sorting, setSorting] = useState<SortingState>([])
   const [selectedStore, setSelectedStore] = useState<ExchangeRate | null>(null)
+  const [exchangeDataCache, setExchangeDataCache] = useState<Record<string, ExchangeRate[]>>({})
 
   const exchangeColumns: ColumnDef<ExchangeRate>[] = [
     {
@@ -173,7 +174,12 @@ export default function ExchangeRateHotelViewer() {
     },
   ]
 
-  const fetchExchangeData = async (baseCurrency: string) => {
+  const fetchExchangeData = useCallback(async (baseCurrency: string) => {
+    if (exchangeDataCache[baseCurrency]) {
+      setExchangeData(exchangeDataCache[baseCurrency])
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -223,6 +229,10 @@ export default function ExchangeRateHotelViewer() {
       })
 
       console.log('Processed data:', processedData)
+      setExchangeDataCache(prevCache => ({
+        ...prevCache,
+        [baseCurrency]: processedData
+      }))
       setExchangeData(processedData)
 
       const firstValidStore = processedData.find(store =>
@@ -242,9 +252,9 @@ export default function ExchangeRateHotelViewer() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [exchangeDataCache])
 
-  const fetchHotelData = async () => {
+  const fetchHotelData = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -274,7 +284,7 @@ export default function ExchangeRateHotelViewer() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (activeTab === 'exchange') {
@@ -282,7 +292,11 @@ export default function ExchangeRateHotelViewer() {
     } else if (activeTab === 'hotel') {
       fetchHotelData()
     }
-  }, [activeTab, activeCurrency])
+
+    return () => {
+      // Cleanup function if needed
+    }
+  }, [activeTab, activeCurrency, fetchExchangeData, fetchHotelData])
 
   const sortedData = useMemo(() => {
     if (activeTab === 'exchange') {
@@ -396,6 +410,8 @@ export default function ExchangeRateHotelViewer() {
     { id: 'massage', label: 'マッサージ' },
     { id: 'ramen', label: 'ラーメン' },
   ]
+
+  const MemoizedMap = useMemo(() => React.memo(Map), [])
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -788,7 +804,7 @@ export default function ExchangeRateHotelViewer() {
             </div>
 
             <div className="w-1/3 min-h-[600px] sticky top-[144px]">
-              <Map
+              <MemoizedMap
                 exchangeRates={exchangeData}
                 selectedStore={selectedStore}
               />
