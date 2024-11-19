@@ -22,8 +22,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 // import { SortIcon } from '@/components/icons/sort-icon'
-import Map from '@/components/map'
-import AdSpace from '@/components/ad-space'
+import Map from './map'
+import AdSpace from './ad-space'
 
 export type ExchangeRate = {
   store: string;
@@ -531,7 +531,23 @@ export default function ExchangeRateHotelViewer() {
                               className="flex items-center"
                             >
                               買いレート
-                              <SortIcon />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4 ml-2"
+                              >
+                                <path d="m3 16 4 4 4-4" />
+                                <path d="M7 20V4" />
+                                <path d="m21 8-4-4-4 4" />
+                                <path d="M17 4v16" />
+                              </svg>
                             </Button>
                             <Button
                               variant="outline"
@@ -539,7 +555,23 @@ export default function ExchangeRateHotelViewer() {
                               className="flex items-center"
                             >
                               売りレート
-                              <SortIcon />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4 ml-2"
+                              >
+                                <path d="m3 16 4 4 4-4" />
+                                <path d="M7 20V4" />
+                                <path d="m21 8-4-4-4 4" />
+                                <path d="M17 4v16" />
+                              </svg>
                             </Button>
                             <Button
                               variant="outline"
@@ -547,7 +579,23 @@ export default function ExchangeRateHotelViewer() {
                               className="flex items-center"
                             >
                               地域
-                              <SortIcon />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="w-4 h-4 ml-2"
+                              >
+                                <path d="m3 16 4 4 4-4" />
+                                <path d="M7 20V4" />
+                                <path d="m21 8-4-4-4 4" />
+                                <path d="M17 4v16" />
+                              </svg>
                             </Button>
                           </div>
                         </nav>
