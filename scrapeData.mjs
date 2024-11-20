@@ -1,4 +1,4 @@
-// 必要なライブラリのインポート
+// scrapeData.mjs
 import puppeteer from 'puppeteer';
 import { google } from 'googleapis';
 import open from 'open';
@@ -6,7 +6,6 @@ import open from 'open';
 // 定数の設定
 const SPREADSHEET_ID = '1ZPkPq-UdjeRljbtxWIQPisCfBoEsCkxjmTyJ2zufB74';
 
-// 認証関数
 // 認証関数
 async function authenticate() {
   try {
@@ -17,7 +16,7 @@ async function authenticate() {
     };
 
     const auth = new google.auth.GoogleAuth({
-      keyFile: JSON_PATH,
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
@@ -88,6 +87,7 @@ async function fetchData(page, url, currencyPair) {
     return { latestInfo: [], data: [] };
   }
 }
+
 async function getSheetId(sheets, spreadsheetId, sheetTitle) {
   const response = await sheets.spreadsheets.get({
     spreadsheetId,
@@ -103,6 +103,7 @@ async function getSheetId(sheets, spreadsheetId, sheetTitle) {
 
   return sheet.properties.sheetId;
 }
+
 // Google Sheetsを更新する関数
 async function updateSheet(sheets, spreadsheetId, sheetTitle, latestInfo, data) {
   try {
@@ -195,59 +196,59 @@ async function updateSheet(sheets, spreadsheetId, sheetTitle, latestInfo, data) 
         throw new Error(`バッチ ${Math.floor(i / BATCH_SIZE) + 1} の書き込みに失敗しました`);
       }
 
-
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-// まず関数を書き込んで計算させる
-// VLOOKUP関数を設定
-const lastRow = data.length + 4;
-const formulaUpdates = {
-  data: [
-    {
-      range: `${sheetTitle}!F4:F${lastRow}`,
-      values: Array(lastRow - 3).fill().map((_, index) => 
-        [`=VLOOKUP(A${index + 4},'店舗情報'!$B$2:$G$68,3,0)`]
-      )
-    },
-    {
-      range: `${sheetTitle}!G4:G${lastRow}`,
-      values: Array(lastRow - 3).fill().map((_, index) => 
-        [`=VLOOKUP(A${index + 4},'店舗情報'!$B$2:$G$68,6,0)`]
-      )
+
+    // まず関数を書き込んで計算させる
+    // VLOOKUP関数を設定
+    const lastRow = data.length + 4;
+    const formulaUpdates = {
+      data: [
+        {
+          range: `${sheetTitle}!F4:F${lastRow}`,
+          values: Array(lastRow - 3).fill().map((_, index) => 
+            [`=VLOOKUP(A${index + 4},'店舗情報'!$B$2:$G$68,3,0)`]
+          )
+        },
+        {
+          range: `${sheetTitle}!G4:G${lastRow}`,
+          values: Array(lastRow - 3).fill().map((_, index) => 
+            [`=VLOOKUP(A${index + 4},'店舗情報'!$B$2:$G$68,6,0)`]
+          )
+        }
+      ],
+      valueInputOption: 'USER_ENTERED'
+    };
+
+    // VLOOKUP関数を適用
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId,
+      requestBody: formulaUpdates
+    });
+
+    // 少し待機して関数の計算を待つ
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // 計算された値を取得
+    const calculatedValues = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetTitle}!F4:G${lastRow}`,
+      valueRenderOption: 'UNFORMATTED_VALUE'  // 計算された実際の値を取得
+    });
+
+    // 取得した値を同じ場所に書き戻す
+    if (calculatedValues.data.values) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${sheetTitle}!F4:G${lastRow}`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: calculatedValues.data.values
+        }
+      });
     }
-  ],
-  valueInputOption: 'USER_ENTERED'
-};
 
-// VLOOKUP関数を適用
-await sheets.spreadsheets.values.batchUpdate({
-  spreadsheetId,
-  requestBody: formulaUpdates
-});
-
-// 少し待機して関数の計算を待つ
-await new Promise(resolve => setTimeout(resolve, 1000));
-
-// 計算された値を取得
-const calculatedValues = await sheets.spreadsheets.values.get({
-  spreadsheetId,
-  range: `${sheetTitle}!F4:G${lastRow}`,
-  valueRenderOption: 'UNFORMATTED_VALUE'  // 計算された実際の値を取得
-});
-
-// 取得した値を同じ場所に書き戻す
-if (calculatedValues.data.values) {
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `${sheetTitle}!F4:G${lastRow}`,
-    valueInputOption: 'RAW',
-    requestBody: {
-      values: calculatedValues.data.values
-    }
-  });
-}
-
-console.log(`${sheetTitle} の更新が完了しました`);
+    console.log(`${sheetTitle} の更新が完了しました`);
   } catch (error) {
     console.error('シート更新エラーの詳細:', {
       message: error.message,
@@ -268,7 +269,6 @@ function getSheetIdByTitle(sheetTitle) {
   };
   return sheetIds[sheetTitle];
 }
-
 
 // メイン処理
 async function main() {
